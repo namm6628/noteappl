@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #messages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            height: 300px;
+            overflow-y: auto;
+        }
+        #status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .connected {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .disconnected {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .error {
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+        }
+        #connectionInfo {
+            background-color: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+    <div id="status" class="disconnected">Đang kết nối...</div>
+    <div id="connectionInfo"></div>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Nhập tin nhắn...">
+    <button onclick="sendMessage()">Gửi</button>
+
+    <script>
+        // Cấu hình Socket.IO
+        const socket = io({
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 20000,
+            autoConnect: true
+        });
+
+        const status = document.getElementById('status');
+        const messages = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const connectionInfo = document.getElementById('connectionInfo');
+
+        // Xử lý sự kiện kết nối
+        socket.on('connect', () => {
+            status.textContent = 'Đã kết nối!';
+            status.className = 'connected';
+            addMessage('Hệ thống', 'Đã kết nối đến server');
+        });
+
+        // Xử lý thông tin kết nối
+        socket.on('connection_info', (info) => {
+            connectionInfo.innerHTML = `
+                <strong>Thông tin kết nối:</strong><br>
+                Socket ID: ${info.id}<br>
+                Transport: ${info.transport}
+            `;
+        });
+
+        // Xử lý sự kiện ngắt kết nối
+        socket.on('disconnect', (reason) => {
+            status.textContent = `Mất kết nối! (${reason})`;
+            status.className = 'disconnected';
+            addMessage('Hệ thống', `Mất kết nối đến server (${reason})`);
+        });
+
+        // Xử lý sự kiện reconnect
+        socket.on('reconnect_attempt', (attemptNumber) => {
+            status.textContent = `Đang thử kết nối lại... (Lần ${attemptNumber})`;
+            status.className = 'disconnected';
+        });
+
+        socket.on('reconnect', (attemptNumber) => {
+            status.textContent = 'Đã kết nối lại!';
+            status.className = 'connected';
+            addMessage('Hệ thống', `Đã kết nối lại sau ${attemptNumber} lần thử`);
+        });
+
+        // Xử lý lỗi
+        socket.on('connect_error', (error) => {
+            status.textContent = `Lỗi kết nối: ${error.message}`;
+            status.className = 'error';
+            addMessage('Hệ thống', `Lỗi kết nối: ${error.message}`);
+        });
+
+        socket.on('error', (error) => {
+            status.textContent = `Lỗi: ${error}`;
+            status.className = 'error';
+            addMessage('Hệ thống', `Lỗi: ${error}`);
+        });
+
+        // Nhận tin nhắn từ server
+        socket.on('message', (data) => {
+            addMessage('Người dùng', data);
+        });
+
+        // Hàm gửi tin nhắn
+        function sendMessage() {
+            const message = messageInput.value;
+            if (message.trim()) {
+                try {
+                    socket.emit('message', message);
+                    messageInput.value = '';
+                } catch (error) {
+                    addMessage('Hệ thống', `Lỗi gửi tin nhắn: ${error.message}`);
+                }
+            }
+        }
+
+        // Hàm hiển thị tin nhắn
+        function addMessage(from, message) {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${from}: ${message}`;
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Xử lý phím Enter
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,16 @@
+{
+    "name": "note-app/websocket",
+    "description": "Real-time note sharing with WebSocket",
+    "require": {
+        "php": ">=7.4",
+        "phpmailer/phpmailer": "^6.10",
+        "cboden/ratchet": "^0.4.4",
+        "react/event-loop": "^1.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "NoteApp\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
