@@ -1,7 +1,8 @@
 const WebSocket = require('ws');
 require('dotenv').config();
 
-const port = process.env.PORT || 8080;
+// Lắng nghe trên cổng mà Render cấp phát (cổng từ biến môi trường)
+const port = process.env.PORT || 8080;  // Cổng mặc định là 8080 nếu không có cổng từ môi trường
 const wss = new WebSocket.Server({ port });
 
 // Lưu trữ kết nối theo noteId
@@ -114,4 +115,4 @@ function removeFromAllNotes(ws) {
     }
 }
 
-console.log(`WebSocket server is running on port ${port}`); 
+console.log(`WebSocket server is running on port ${port}`);
