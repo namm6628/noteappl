@@ -22,6 +22,11 @@ const server = app.listen(port, () => {
 // Tạo WebSocket server trên cùng HTTP server
 const wss = new WebSocket.Server({ server });
 
+// Log khi WebSocket server sẵn sàng
+wss.on('listening', () => {
+  console.log(`WebSocket server is running on port ${port}`);
+});
+
 // --- Phần xử lý WebSocket của bạn ---
 const noteConnections = new Map();
 
